@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { IdleScreen } from './IdleScreen';
 import { OrderTypeScreen } from './OrderTypeScreen';
 import { MenuScreen } from './MenuScreen';
+import { ItemDetailScreen } from './ItemDetailScreen';
 import { UpsellScreen } from './UpsellScreen';
 import { PaymentScreen } from './PaymentScreen';
 import { ConfirmationScreen } from './ConfirmationScreen';
@@ -18,6 +19,8 @@ export const KioskApp = () => {
         return <OrderTypeScreen />;
       case 'menu':
         return <MenuScreen />;
+      case 'item-detail':
+        return <ItemDetailScreen />;
       case 'upsell':
         return <UpsellScreen />;
       case 'payment':

@@ -58,6 +58,30 @@ export const menuItems: MenuItem[] = [
     isPopular: true,
     calories: 520,
     allergens: ['Gluten', 'Dairy'],
+    customizations: [
+      {
+        id: 'meal',
+        name: 'Make it a Meal',
+        type: 'single',
+        required: false,
+        options: [
+          { id: 'sandwich-only', name: 'Sandwich Only', price: 0, isDefault: true },
+          { id: 'medium-meal', name: 'Medium Meal', price: 3.00 },
+          { id: 'large-meal', name: 'Large Meal', price: 4.00 },
+        ],
+      },
+      {
+        id: 'remove',
+        name: 'Remove Ingredients',
+        type: 'multiple',
+        required: false,
+        options: [
+          { id: 'no-onions', name: 'No Onions', price: 0 },
+          { id: 'no-pickles', name: 'No Pickles', price: 0 },
+          { id: 'no-ketchup', name: 'No Ketchup', price: 0 },
+        ],
+      },
+    ],
   },
   {
     id: 'mcchicken',
@@ -91,6 +115,31 @@ export const menuItems: MenuItem[] = [
     isPopular: true,
     calories: 420,
     allergens: ['Gluten'],
+    customizations: [
+      {
+        id: 'meal',
+        name: 'Make it a Meal',
+        type: 'single',
+        required: false,
+        options: [
+          { id: 'nuggets-only', name: 'Nuggets Only', price: 0, isDefault: true },
+          { id: 'medium-meal', name: 'Medium Meal', price: 3.50 },
+          { id: 'large-meal', name: 'Large Meal', price: 4.50 },
+        ],
+      },
+      {
+        id: 'sauce',
+        name: 'Choose Sauce',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'bbq', name: 'BBQ Sauce', price: 0, isDefault: true },
+          { id: 'sweet-sour', name: 'Sweet & Sour', price: 0 },
+          { id: 'honey-mustard', name: 'Honey Mustard', price: 0 },
+          { id: 'ranch', name: 'Ranch', price: 0 },
+        ],
+      },
+    ],
   },
   {
     id: 'mcflurry-oreo',
