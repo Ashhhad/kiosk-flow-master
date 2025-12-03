@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -39,6 +42,14 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -62,23 +73,34 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 16px)",
+      },
+      fontSize: {
+        "kiosk-xs": ["0.875rem", { lineHeight: "1.25rem" }],
+        "kiosk-sm": ["1rem", { lineHeight: "1.5rem" }],
+        "kiosk-base": ["1.125rem", { lineHeight: "1.75rem" }],
+        "kiosk-lg": ["1.25rem", { lineHeight: "1.75rem" }],
+        "kiosk-xl": ["1.5rem", { lineHeight: "2rem" }],
+        "kiosk-2xl": ["1.875rem", { lineHeight: "2.25rem" }],
+        "kiosk-3xl": ["2.25rem", { lineHeight: "2.5rem" }],
+        "kiosk-4xl": ["3rem", { lineHeight: "1.1" }],
+        "kiosk-5xl": ["3.75rem", { lineHeight: "1" }],
+      },
+      spacing: {
+        "kiosk-touch": "60px",
+        "18": "4.5rem",
+        "22": "5.5rem",
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
