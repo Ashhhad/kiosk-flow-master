@@ -7,11 +7,18 @@ import { CartSidebar } from './CartSidebar';
 import { useState } from 'react';
 
 export const MenuScreen = () => {
-  const { selectedCategory, setSelectedCategory, setScreen, orderType, cart } = useKioskStore();
+  const { 
+    selectedCategory, 
+    setSelectedCategory, 
+    setScreen, 
+    orderType,
+    getCartItemCount,
+    getGrandTotal,
+  } = useKioskStore();
   const [showCart, setShowCart] = useState(false);
   const items = getItemsByCategory(selectedCategory);
-  const cartItemCount = useKioskStore((state) => state.getCartItemCount());
-  const cartTotal = useKioskStore((state) => state.getCartTotal());
+  const cartItemCount = getCartItemCount();
+  const cartTotal = getGrandTotal();
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -42,7 +49,7 @@ export const MenuScreen = () => {
           <Button
             variant="kiosk-ghost"
             size="kiosk"
-            onClick={() => setScreen('idle')}
+            onClick={() => useKioskStore.getState().resetKiosk()}
           >
             Cancel Order
           </Button>
@@ -84,7 +91,7 @@ export const MenuScreen = () => {
           </AnimatePresence>
         </main>
 
-        {/* Bottom Cart Bar (Mobile/Collapsed) */}
+        {/* Bottom Cart Bar (Mobile) */}
         {cartItemCount > 0 && (
           <motion.div
             initial={{ y: 100 }}

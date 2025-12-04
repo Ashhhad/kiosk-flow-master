@@ -4,12 +4,16 @@ import { IdleScreen } from './IdleScreen';
 import { OrderTypeScreen } from './OrderTypeScreen';
 import { MenuScreen } from './MenuScreen';
 import { ItemDetailScreen } from './ItemDetailScreen';
+import { CartReviewScreen } from './CartReviewScreen';
 import { UpsellScreen } from './UpsellScreen';
 import { PaymentScreen } from './PaymentScreen';
 import { ConfirmationScreen } from './ConfirmationScreen';
+import { InactivityMonitor } from './InactivityModal';
+import { ErrorModal } from './ErrorModal';
 
 export const KioskApp = () => {
   const currentScreen = useKioskStore((state) => state.currentScreen);
+  const error = useKioskStore((state) => state.error);
 
   const renderScreen = () => {
     switch (currentScreen) {
@@ -21,6 +25,8 @@ export const KioskApp = () => {
         return <MenuScreen />;
       case 'item-detail':
         return <ItemDetailScreen />;
+      case 'cart':
+        return <CartReviewScreen />;
       case 'upsell':
         return <UpsellScreen />;
       case 'payment':
@@ -34,9 +40,16 @@ export const KioskApp = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
+      {/* Main Screen */}
       <AnimatePresence mode="wait">
         {renderScreen()}
       </AnimatePresence>
+      
+      {/* Inactivity Monitor */}
+      <InactivityMonitor />
+      
+      {/* Error Modal */}
+      {error.type && <ErrorModal />}
     </div>
   );
 };

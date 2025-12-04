@@ -7,12 +7,26 @@ interface CartSidebarProps {
 }
 
 export const CartSidebar = ({ onClose }: CartSidebarProps) => {
-  const { cart, updateCartItemQuantity, removeFromCart, setScreen } = useKioskStore();
-  const cartTotal = useKioskStore((state) => state.getCartTotal());
-  const cartItemCount = useKioskStore((state) => state.getCartItemCount());
+  const { 
+    cart, 
+    updateCartItemQuantity, 
+    removeFromCart, 
+    setScreen,
+    getCartTotal,
+    getCartItemCount,
+    getTaxAmount,
+    getGrandTotal,
+  } = useKioskStore();
 
-  const tax = cartTotal * 0.08;
-  const grandTotal = cartTotal + tax;
+  const handleReviewOrder = () => {
+    if (onClose) onClose();
+    setScreen('cart');
+  };
+
+  const handleCheckout = () => {
+    if (onClose) onClose();
+    setScreen('upsell');
+  };
 
   return (
     <div className="h-full flex flex-col bg-card">
@@ -53,8 +67,12 @@ export const CartSidebar = ({ onClose }: CartSidebarProps) => {
                 >
                   <div className="flex gap-3">
                     {/* Item image placeholder */}
-                    <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
-                      🍔
+                    <div className="w-14 h-14 bg-muted rounded-lg flex items-center justify-center text-2xl flex-shrink-0">
+                      {item.menuItem.category === 'burgers' || item.menuItem.category === 'popular' ? '🍔' :
+                       item.menuItem.category === 'chicken' ? '🍗' :
+                       item.menuItem.category === 'sides' ? '🍟' :
+                       item.menuItem.category === 'drinks' ? '🥤' :
+                       item.menuItem.category === 'desserts' ? '🍦' : '🍽️'}
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -79,7 +97,7 @@ export const CartSidebar = ({ onClose }: CartSidebarProps) => {
                       variant="ghost"
                       size="icon"
                       onClick={() => removeFromCart(item.id)}
-                      className="text-destructive hover:bg-destructive/10"
+                      className="text-destructive hover:bg-destructive/10 h-10 w-10"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -87,29 +105,21 @@ export const CartSidebar = ({ onClose }: CartSidebarProps) => {
                     </Button>
 
                     <div className="flex items-center gap-3">
-                      <Button
-                        variant="secondary"
-                        size="icon"
+                      <button
                         onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-                        className="h-10 w-10"
+                        className="h-10 w-10 rounded-full bg-secondary text-foreground font-bold hover:bg-secondary/80 active:scale-95 transition-all flex items-center justify-center"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                        </svg>
-                      </Button>
+                        −
+                      </button>
                       <span className="text-kiosk-lg font-bold text-foreground w-8 text-center">
                         {item.quantity}
                       </span>
-                      <Button
-                        variant="secondary"
-                        size="icon"
+                      <button
                         onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-                        className="h-10 w-10"
+                        className="h-10 w-10 rounded-full bg-primary text-primary-foreground font-bold hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center"
                       >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                      </Button>
+                        +
+                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -125,31 +135,41 @@ export const CartSidebar = ({ onClose }: CartSidebarProps) => {
           {/* Totals */}
           <div className="space-y-2">
             <div className="flex justify-between text-kiosk-base text-muted-foreground">
-              <span>Subtotal ({cartItemCount} items)</span>
-              <span>${cartTotal.toFixed(2)}</span>
+              <span>Subtotal ({getCartItemCount()} items)</span>
+              <span>${getCartTotal().toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-kiosk-base text-muted-foreground">
               <span>Tax (8%)</span>
-              <span>${tax.toFixed(2)}</span>
+              <span>${getTaxAmount().toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-kiosk-xl font-bold text-foreground pt-2 border-t border-border">
               <span>Total</span>
-              <span className="text-primary">${grandTotal.toFixed(2)}</span>
+              <span className="text-primary">${getGrandTotal().toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Checkout Button */}
-          <Button
-            variant="kiosk-success"
-            size="kiosk-lg"
-            className="w-full"
-            onClick={() => setScreen('upsell')}
-          >
-            Continue to Payment
-            <svg className="w-6 h-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Button>
+          {/* Actions */}
+          <div className="space-y-2">
+            <Button
+              variant="kiosk-secondary"
+              size="kiosk"
+              className="w-full"
+              onClick={handleReviewOrder}
+            >
+              Review Order
+            </Button>
+            <Button
+              variant="kiosk-success"
+              size="kiosk-lg"
+              className="w-full"
+              onClick={handleCheckout}
+            >
+              Checkout
+              <svg className="w-6 h-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Button>
+          </div>
         </div>
       )}
     </div>
