@@ -8,10 +8,17 @@ import type {
   KioskScreen,
   SelectedCustomization 
 } from '@/types/kiosk';
+import { analyticsService } from '@/services/analyticsService';
 
 interface KioskState {
+  // Session state
+  sessionId: string | null;
+  sessionStartTime: number | null;
+  lastActivityTime: number;
+  
   // Flow state
   currentScreen: KioskScreen;
+  previousScreen: KioskScreen | null;
   businessType: BusinessType | null;
   orderType: OrderType | null;
   language: Language;
@@ -27,7 +34,19 @@ interface KioskState {
   orderNumber: string | null;
   estimatedTime: number | null;
   
+  // Error state
+  error: {
+    type: 'network' | 'payment' | 'printer' | 'kds' | 'out-of-stock' | null;
+    message: string | null;
+    retryAction: (() => void) | null;
+  };
+  
+  // Timeout state
+  showTimeoutWarning: boolean;
+  timeoutCountdown: number;
+  
   // Actions
+  startSession: () => void;
   setScreen: (screen: KioskScreen) => void;
   setBusinessType: (type: BusinessType) => void;
   setOrderType: (type: OrderType) => void;
@@ -45,20 +64,56 @@ interface KioskState {
   completeOrder: (orderNumber: string, estimatedTime: number) => void;
   resetKiosk: () => void;
   
+  // Activity tracking
+  recordActivity: () => void;
+  setShowTimeoutWarning: (show: boolean) => void;
+  setTimeoutCountdown: (count: number) => void;
+  
+  // Error handling
+  setError: (error: KioskState['error']) => void;
+  clearError: () => void;
+  
   // Computed
   getCartTotal: () => number;
   getCartItemCount: () => number;
+  getTaxAmount: () => number;
+  getGrandTotal: () => number;
 }
+
+const generateSessionId = (): string => {
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
 
 const calculateItemTotal = (item: MenuItem, quantity: number, customizations: SelectedCustomization[]): number => {
   let total = item.price;
-  // Add customization prices here when needed
+  
+  // Add customization prices
+  if (item.customizations) {
+    customizations.forEach((selection) => {
+      const customization = item.customizations?.find(c => c.id === selection.customizationId);
+      if (customization) {
+        selection.optionIds.forEach((optionId) => {
+          const option = customization.options.find(o => o.id === optionId);
+          if (option) {
+            total += option.price;
+          }
+        });
+      }
+    });
+  }
+  
   return total * quantity;
 };
 
+const TAX_RATE = 0.08;
+
 export const useKioskStore = create<KioskState>((set, get) => ({
   // Initial state
+  sessionId: null,
+  sessionStartTime: null,
+  lastActivityTime: Date.now(),
   currentScreen: 'idle',
+  previousScreen: null,
   businessType: null,
   orderType: null,
   language: 'en',
@@ -67,14 +122,70 @@ export const useKioskStore = create<KioskState>((set, get) => ({
   selectedItem: null,
   orderNumber: null,
   estimatedTime: null,
+  error: { type: null, message: null, retryAction: null },
+  showTimeoutWarning: false,
+  timeoutCountdown: 60,
+
+  // Session management
+  startSession: () => {
+    const sessionId = generateSessionId();
+    const now = Date.now();
+    set({ 
+      sessionId, 
+      sessionStartTime: now,
+      lastActivityTime: now,
+    });
+    // [SYSTEM ACTION] session.start()
+    analyticsService.trackEvent('session_start', { sessionId });
+    console.log('[SYSTEM ACTION] session.start() - Session ID:', sessionId);
+  },
 
   // Actions
-  setScreen: (screen) => set({ currentScreen: screen }),
-  setBusinessType: (type) => set({ businessType: type }),
-  setOrderType: (type) => set({ orderType: type }),
-  setLanguage: (lang) => set({ language: lang }),
-  setSelectedCategory: (category) => set({ selectedCategory: category }),
-  setSelectedItem: (item) => set({ selectedItem: item }),
+  setScreen: (screen) => {
+    const state = get();
+    set({ 
+      currentScreen: screen,
+      previousScreen: state.currentScreen,
+      lastActivityTime: Date.now(),
+    });
+    // [SYSTEM ACTION] Track screen navigation
+    analyticsService.trackEvent('screen_view', { 
+      screen, 
+      previousScreen: state.currentScreen,
+      sessionId: state.sessionId 
+    });
+  },
+  
+  setBusinessType: (type) => {
+    set({ businessType: type, lastActivityTime: Date.now() });
+    analyticsService.trackEvent('business_type_selected', { type });
+  },
+  
+  setOrderType: (type) => {
+    set({ orderType: type, lastActivityTime: Date.now() });
+    // [SYSTEM ACTION] session.setOrderType()
+    analyticsService.trackEvent('order_type_selected', { type });
+    console.log('[SYSTEM ACTION] session.setOrderType() -', type);
+  },
+  
+  setLanguage: (lang) => {
+    set({ language: lang, lastActivityTime: Date.now() });
+    analyticsService.trackEvent('language_changed', { language: lang });
+  },
+  
+  setSelectedCategory: (category) => {
+    set({ selectedCategory: category, lastActivityTime: Date.now() });
+    // [SYSTEM ACTION] menu.load(category)
+    analyticsService.trackEvent('category_selected', { category });
+    console.log('[SYSTEM ACTION] menu.load() - Category:', category);
+  },
+  
+  setSelectedItem: (item) => {
+    set({ selectedItem: item, lastActivityTime: Date.now() });
+    if (item) {
+      analyticsService.trackEvent('item_viewed', { itemId: item.id, itemName: item.name });
+    }
+  },
 
   // Cart actions
   addToCart: (item, quantity, customizations) => {
@@ -89,7 +200,18 @@ export const useKioskStore = create<KioskState>((set, get) => ({
         customizations,
         totalPrice,
       }],
+      lastActivityTime: Date.now(),
     }));
+    
+    // [SYSTEM ACTION] cart.addItem(itemObject)
+    analyticsService.trackEvent('item_added_to_cart', { 
+      itemId: item.id, 
+      itemName: item.name,
+      quantity,
+      totalPrice,
+      customizations: customizations.length,
+    });
+    console.log('[SYSTEM ACTION] cart.addItem() -', item.name, 'x', quantity);
   },
 
   updateCartItemQuantity: (cartItemId, quantity) => {
@@ -104,24 +226,69 @@ export const useKioskStore = create<KioskState>((set, get) => ({
           ? { ...item, quantity, totalPrice: calculateItemTotal(item.menuItem, quantity, item.customizations) }
           : item
       ),
+      lastActivityTime: Date.now(),
     }));
+    
+    // [SYSTEM ACTION] cart.updateQuantity(itemId)
+    console.log('[SYSTEM ACTION] cart.updateQuantity() - Item:', cartItemId, 'Qty:', quantity);
   },
 
   removeFromCart: (cartItemId) => {
+    const state = get();
+    const removedItem = state.cart.find(item => item.id === cartItemId);
+    
     set((state) => ({
       cart: state.cart.filter((item) => item.id !== cartItemId),
+      lastActivityTime: Date.now(),
     }));
+    
+    // [SYSTEM ACTION] cart.removeItem(itemId)
+    if (removedItem) {
+      analyticsService.trackEvent('item_removed_from_cart', { 
+        itemId: removedItem.menuItem.id,
+        itemName: removedItem.menuItem.name,
+      });
+    }
+    console.log('[SYSTEM ACTION] cart.removeItem() -', cartItemId);
   },
 
-  clearCart: () => set({ cart: [] }),
+  clearCart: () => {
+    set({ cart: [], lastActivityTime: Date.now() });
+    console.log('[SYSTEM ACTION] cart.clear()');
+  },
 
   completeOrder: (orderNumber, estimatedTime) => {
+    const state = get();
+    // [SYSTEM ACTION] kds.publish(order)
+    // [SYSTEM ACTION] printer.print(order)
+    analyticsService.trackEvent('order_completed', { 
+      orderNumber,
+      sessionId: state.sessionId,
+      orderType: state.orderType,
+      total: state.getGrandTotal(),
+      itemCount: state.getCartItemCount(),
+    });
+    console.log('[SYSTEM ACTION] kds.publish() - Order:', orderNumber);
+    console.log('[SYSTEM ACTION] printer.print() - Order:', orderNumber);
+    
     set({ orderNumber, estimatedTime, currentScreen: 'confirmation' });
   },
 
   resetKiosk: () => {
+    const state = get();
+    // [SYSTEM ACTION] session.destroy()
+    analyticsService.trackEvent('session_end', { 
+      sessionId: state.sessionId,
+      duration: state.sessionStartTime ? Date.now() - state.sessionStartTime : 0,
+    });
+    console.log('[SYSTEM ACTION] session.destroy() - Session ID:', state.sessionId);
+    
     set({
+      sessionId: null,
+      sessionStartTime: null,
+      lastActivityTime: Date.now(),
       currentScreen: 'idle',
+      previousScreen: null,
       businessType: null,
       orderType: null,
       language: 'en',
@@ -130,8 +297,34 @@ export const useKioskStore = create<KioskState>((set, get) => ({
       selectedItem: null,
       orderNumber: null,
       estimatedTime: null,
+      error: { type: null, message: null, retryAction: null },
+      showTimeoutWarning: false,
+      timeoutCountdown: 60,
     });
   },
+  
+  // Activity tracking
+  recordActivity: () => {
+    set({ 
+      lastActivityTime: Date.now(),
+      showTimeoutWarning: false,
+      timeoutCountdown: 60,
+    });
+  },
+  
+  setShowTimeoutWarning: (show) => set({ showTimeoutWarning: show }),
+  setTimeoutCountdown: (count) => set({ timeoutCountdown: count }),
+  
+  // Error handling
+  setError: (error) => {
+    set({ error });
+    analyticsService.trackEvent('error_occurred', { 
+      type: error.type,
+      message: error.message,
+    });
+  },
+  
+  clearError: () => set({ error: { type: null, message: null, retryAction: null } }),
 
   // Computed
   getCartTotal: () => {
@@ -140,5 +333,14 @@ export const useKioskStore = create<KioskState>((set, get) => ({
 
   getCartItemCount: () => {
     return get().cart.reduce((count, item) => count + item.quantity, 0);
+  },
+  
+  getTaxAmount: () => {
+    return get().getCartTotal() * TAX_RATE;
+  },
+  
+  getGrandTotal: () => {
+    const subtotal = get().getCartTotal();
+    return subtotal + (subtotal * TAX_RATE);
   },
 }));
