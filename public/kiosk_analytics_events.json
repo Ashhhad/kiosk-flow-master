@@ -1,0 +1,294 @@
+{
+  "version": "1.0.0",
+  "common_properties": {
+    "kiosk_id": "string - Unique identifier for the kiosk device",
+    "session_id": "string - Current user session ID",
+    "app_version": "string - Application version (e.g., 1.0.0)",
+    "timestamp": "number - Unix timestamp in milliseconds"
+  },
+  "events": [
+    {
+      "name": "session_started",
+      "description": "Fired when user taps to start ordering",
+      "trigger": "User taps idle screen",
+      "payload": {
+        "kiosk_id": "kiosk_001",
+        "session_id": "session_1733571600000_abc123",
+        "timestamp": 1733571600000,
+        "app_version": "1.0.0",
+        "device_type": "kiosk_portrait"
+      }
+    },
+    {
+      "name": "order_type_selected",
+      "description": "User selects dine-in or takeaway",
+      "trigger": "User taps order type button",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "order_type": "dine-in",
+        "timestamp": 1733571605000
+      }
+    },
+    {
+      "name": "menu_category_viewed",
+      "description": "User navigates to a menu category",
+      "trigger": "User taps category button",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "category_id": "burgers",
+        "position": 1,
+        "item_count": 12,
+        "timestamp": 1733571610000
+      }
+    },
+    {
+      "name": "item_viewed",
+      "description": "User opens item detail screen",
+      "trigger": "User taps on menu item",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "item_id": "big-mac",
+        "item_name": "Big Mac",
+        "variant_id": null,
+        "price": 5.99,
+        "category": "popular",
+        "has_customizations": true,
+        "timestamp": 1733571620000
+      }
+    },
+    {
+      "name": "addon_selected",
+      "description": "User selects or deselects an add-on",
+      "trigger": "User taps add-on chip",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "item_id": "big-mac",
+        "addon_id": "extra-cheese",
+        "addon_name": "Extra Cheese",
+        "addon_price": 0.50,
+        "action": "add",
+        "remaining_slots": 1,
+        "total_selected": 1,
+        "max_allowed": 2,
+        "timestamp": 1733571625000
+      }
+    },
+    {
+      "name": "add_to_cart",
+      "description": "User adds item to cart",
+      "trigger": "User taps 'Add to Order' button",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "item_id": "big-mac",
+        "item_name": "Big Mac",
+        "addons": [
+          { "id": "extra-cheese", "price": 0.50 },
+          { "id": "medium-meal", "price": 3.00 }
+        ],
+        "quantity": 1,
+        "unit_price": 5.99,
+        "price_total": 9.49,
+        "quick_add": false,
+        "timestamp": 1733571630000
+      }
+    },
+    {
+      "name": "cart_edited",
+      "description": "User modifies cart (quantity change or removal)",
+      "trigger": "User edits item in cart",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "action": "update_quantity",
+        "cart_item_id": "cart_item_xyz",
+        "item_id": "big-mac",
+        "previous_quantity": 1,
+        "new_quantity": 2,
+        "previous_total": 9.49,
+        "new_total": 18.98,
+        "timestamp": 1733571640000
+      }
+    },
+    {
+      "name": "upsell_shown",
+      "description": "Upsell screen displayed to user",
+      "trigger": "User proceeds to checkout",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "recommendations": [
+          { "item_id": "fries-medium", "reason": "Goes great with your order!" },
+          { "item_id": "coca-cola-medium", "reason": "Add a drink?" },
+          { "item_id": "mcflurry-oreo", "reason": "Sweet finish!" }
+        ],
+        "cart_value": 18.98,
+        "timestamp": 1733571650000
+      }
+    },
+    {
+      "name": "upsell_accepted",
+      "description": "User accepts an upsell recommendation",
+      "trigger": "User taps upsell item",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "chosen_item_id": "fries-medium",
+        "chosen_item_price": 2.79,
+        "position": 0,
+        "cart_value_before": 18.98,
+        "cart_value_after": 21.77,
+        "timestamp": 1733571655000
+      }
+    },
+    {
+      "name": "upsell_declined",
+      "description": "User declines all upsells",
+      "trigger": "User taps 'No Thanks'",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "recommendations_shown": ["fries-medium", "coca-cola-medium", "mcflurry-oreo"],
+        "cart_value": 18.98,
+        "timestamp": 1733571660000
+      }
+    },
+    {
+      "name": "payment_attempt",
+      "description": "User initiates payment",
+      "trigger": "User taps payment method",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "method": "card",
+        "amount": 20.46,
+        "currency": "USD",
+        "item_count": 2,
+        "timestamp": 1733571670000
+      }
+    },
+    {
+      "name": "payment_result",
+      "description": "Payment processing complete",
+      "trigger": "Payment gateway returns result",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "method": "card",
+        "amount": 20.46,
+        "status": "success",
+        "transaction_id": "txn_abc123",
+        "code": "APPROVED",
+        "processing_time_ms": 2340,
+        "timestamp": 1733571672340
+      }
+    },
+    {
+      "name": "order_completed",
+      "description": "Order successfully placed",
+      "trigger": "After successful payment and KDS publish",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "order_number": "A042",
+        "order_type": "dine-in",
+        "total": 20.46,
+        "item_count": 2,
+        "session_duration_ms": 72340,
+        "timestamp": 1733571672340
+      }
+    },
+    {
+      "name": "offline_mode_entered",
+      "description": "App detected network loss",
+      "trigger": "Network status changes to offline",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "kiosk_id": "kiosk_001",
+        "cart_items_count": 2,
+        "pending_mutations_count": 0,
+        "timestamp": 1733571680000
+      }
+    },
+    {
+      "name": "offline_mode_exited",
+      "description": "Network restored",
+      "trigger": "Network status changes to online",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "kiosk_id": "kiosk_001",
+        "offline_duration_ms": 15000,
+        "pending_mutations_count": 3,
+        "sync_triggered": true,
+        "timestamp": 1733571695000
+      }
+    },
+    {
+      "name": "conflict_detected",
+      "description": "Server-side change conflicts with local cart",
+      "trigger": "sync.reconcile() returns conflicts",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "conflict_type": "ADDON_UNAVAILABLE",
+        "items_affected": ["big-mac"],
+        "conflict_details": {
+          "addon_id": "extra-bacon",
+          "reason": "Item removed from menu"
+        },
+        "user_action_required": true,
+        "timestamp": 1733571700000
+      }
+    },
+    {
+      "name": "error_occurred",
+      "description": "System error occurred",
+      "trigger": "Any error state",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "error_type": "payment",
+        "error_code": "DECLINED",
+        "error_message": "Payment was declined",
+        "context": {
+          "screen": "payment",
+          "amount": 20.46
+        },
+        "timestamp": 1733571710000
+      }
+    },
+    {
+      "name": "inactivity_warning_shown",
+      "description": "Timeout warning modal displayed",
+      "trigger": "45 seconds of inactivity",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "screen": "menu",
+        "cart_value": 18.98,
+        "timestamp": 1733571720000
+      }
+    },
+    {
+      "name": "session_timeout",
+      "description": "Session ended due to inactivity",
+      "trigger": "60 seconds of inactivity without response",
+      "payload": {
+        "session_id": "session_1733571600000_abc123",
+        "screen": "menu",
+        "cart_value": 18.98,
+        "cart_items_count": 2,
+        "session_duration_ms": 120000,
+        "timestamp": 1733571780000
+      }
+    },
+    {
+      "name": "admin_access_opened",
+      "description": "Staff accessed admin dashboard",
+      "trigger": "5 rapid taps in top-left corner",
+      "payload": {
+        "kiosk_id": "kiosk_001",
+        "timestamp": 1733571800000
+      }
+    },
+    {
+      "name": "admin_action",
+      "description": "Staff performed admin action",
+      "trigger": "Button press in admin dashboard",
+      "payload": {
+        "kiosk_id": "kiosk_001",
+        "action": "restart_kiosk",
+        "timestamp": 1733571810000
+      }
+    }
+  ]
+}

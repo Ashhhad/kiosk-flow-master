@@ -1,0 +1,267 @@
+{
+  "version": "1.0.0",
+  "name": "Cloud POS Self-Service Kiosk User Flow",
+  "description": "Complete user journey from approach to order completion",
+  "nodes": [
+    {
+      "id": "idle",
+      "type": "screen",
+      "name": "Idle Screen",
+      "description": "Attract/standby screen awaiting user interaction",
+      "system_actions": [],
+      "analytics": ["session_started (on exit)"]
+    },
+    {
+      "id": "order_type",
+      "type": "screen",
+      "name": "Order Type Selection",
+      "description": "User chooses Dine In or Take Away",
+      "system_actions": ["session.start(kiosk_id)"],
+      "analytics": ["order_type_selected"]
+    },
+    {
+      "id": "menu",
+      "type": "screen",
+      "name": "Menu Browsing",
+      "description": "Category navigation and item grid",
+      "system_actions": ["menu.fetchCategories()", "menu.fetchItems(category_id)"],
+      "analytics": ["menu_category_viewed"]
+    },
+    {
+      "id": "item_detail",
+      "type": "screen",
+      "name": "Item Customization",
+      "description": "Size, add-ons, quantity selection",
+      "system_actions": ["item.fetchDetails(item_id)", "session.touch(session_id)"],
+      "analytics": ["item_viewed", "addon_selected"]
+    },
+    {
+      "id": "cart_review",
+      "type": "screen",
+      "name": "Cart Review",
+      "description": "Full cart view with edit capabilities",
+      "system_actions": ["cart.recalculate(session_id)"],
+      "analytics": ["cart_edited"]
+    },
+    {
+      "id": "upsell",
+      "type": "screen",
+      "name": "Upsell Recommendations",
+      "description": "Forced upsell screen with 2-3 recommendations",
+      "system_actions": [],
+      "analytics": ["upsell_shown", "upsell_accepted", "upsell_declined"]
+    },
+    {
+      "id": "payment",
+      "type": "screen",
+      "name": "Payment Processing",
+      "description": "Payment method selection and processing",
+      "system_actions": ["cart.recalculate(session_id)", "payment.process(session_id, payload)"],
+      "analytics": ["payment_attempt", "payment_result"]
+    },
+    {
+      "id": "confirmation",
+      "type": "screen",
+      "name": "Order Confirmation",
+      "description": "Success animation, order number, pickup instructions",
+      "system_actions": ["kds.publish(order)", "printer.print(order)"],
+      "analytics": ["order_completed"]
+    },
+    {
+      "id": "session_reset",
+      "type": "action",
+      "name": "Session Reset",
+      "description": "Clear session and return to idle",
+      "system_actions": ["session.destroy(session_id)"],
+      "analytics": []
+    },
+    {
+      "id": "inactivity_warning",
+      "type": "modal",
+      "name": "Inactivity Warning",
+      "description": "Are you still there? countdown",
+      "system_actions": ["session.warnTimeout(session_id)"],
+      "analytics": ["inactivity_warning_shown"]
+    },
+    {
+      "id": "error_modal",
+      "type": "modal",
+      "name": "Error Display",
+      "description": "Network, payment, printer, KDS errors",
+      "system_actions": [],
+      "analytics": ["error_occurred"]
+    },
+    {
+      "id": "conflict_modal",
+      "type": "modal",
+      "name": "Cart Conflict Resolution",
+      "description": "Handle server-side changes to cart items",
+      "system_actions": ["sync.reconcile(session_id)"],
+      "analytics": ["conflict_detected"]
+    },
+    {
+      "id": "offline_state",
+      "type": "state",
+      "name": "Offline Mode",
+      "description": "Network unavailable, local persistence active",
+      "system_actions": [],
+      "analytics": ["offline_mode_entered", "offline_mode_exited"]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "idle",
+      "to": "order_type",
+      "trigger": "user_tap",
+      "condition": null
+    },
+    {
+      "from": "order_type",
+      "to": "menu",
+      "trigger": "order_type_selected",
+      "condition": null
+    },
+    {
+      "from": "menu",
+      "to": "item_detail",
+      "trigger": "item_tap",
+      "condition": "item.has_customizations === true"
+    },
+    {
+      "from": "menu",
+      "to": "menu",
+      "trigger": "item_tap",
+      "condition": "item.has_customizations === false (quick add)",
+      "action": "cart.addItem()"
+    },
+    {
+      "from": "item_detail",
+      "to": "menu",
+      "trigger": "add_to_order | back",
+      "action": "cart.addItem() if adding"
+    },
+    {
+      "from": "menu",
+      "to": "cart_review",
+      "trigger": "cart_tap (mobile) | review_order_button",
+      "condition": "cart.length > 0"
+    },
+    {
+      "from": "cart_review",
+      "to": "menu",
+      "trigger": "back | add_more_items",
+      "condition": null
+    },
+    {
+      "from": "cart_review",
+      "to": "upsell",
+      "trigger": "checkout_button",
+      "condition": null
+    },
+    {
+      "from": "menu",
+      "to": "upsell",
+      "trigger": "checkout_button (sidebar)",
+      "condition": "cart.length > 0"
+    },
+    {
+      "from": "upsell",
+      "to": "payment",
+      "trigger": "no_thanks | upsell_added",
+      "condition": null
+    },
+    {
+      "from": "payment",
+      "to": "confirmation",
+      "trigger": "payment_success",
+      "condition": null
+    },
+    {
+      "from": "payment",
+      "to": "error_modal",
+      "trigger": "payment_failed",
+      "condition": null
+    },
+    {
+      "from": "error_modal",
+      "to": "payment",
+      "trigger": "retry",
+      "condition": null
+    },
+    {
+      "from": "error_modal",
+      "to": "menu",
+      "trigger": "cancel",
+      "condition": null
+    },
+    {
+      "from": "confirmation",
+      "to": "session_reset",
+      "trigger": "timeout_30s | done_button",
+      "condition": null
+    },
+    {
+      "from": "session_reset",
+      "to": "idle",
+      "trigger": "automatic",
+      "condition": null
+    },
+    {
+      "from": "*",
+      "to": "inactivity_warning",
+      "trigger": "inactivity_45s",
+      "condition": "currentScreen !== 'idle' && currentScreen !== 'confirmation'"
+    },
+    {
+      "from": "inactivity_warning",
+      "to": "previous_screen",
+      "trigger": "continue_button",
+      "action": "session.touch()"
+    },
+    {
+      "from": "inactivity_warning",
+      "to": "session_reset",
+      "trigger": "timeout_15s | cancel_button",
+      "condition": null
+    },
+    {
+      "from": "*",
+      "to": "offline_state",
+      "trigger": "network_offline",
+      "condition": null
+    },
+    {
+      "from": "offline_state",
+      "to": "conflict_modal",
+      "trigger": "network_online",
+      "condition": "sync.reconcile() returns conflicts",
+      "action": "sync.reconcile()"
+    },
+    {
+      "from": "offline_state",
+      "to": "previous_screen",
+      "trigger": "network_online",
+      "condition": "sync.reconcile() succeeds"
+    },
+    {
+      "from": "*",
+      "to": "order_type",
+      "trigger": "cancel_order",
+      "action": "session.destroy(), session.start()"
+    }
+  ],
+  "global_behaviors": {
+    "activity_tracking": {
+      "trigger": "any_user_interaction",
+      "action": "session.touch(session_id)"
+    },
+    "cart_persistence": {
+      "trigger": "cart_mutation",
+      "action": "Save to sessionStorage, debounced server sync (3s)"
+    },
+    "health_monitoring": {
+      "trigger": "interval_30s",
+      "action": "health.check()"
+    }
+  }
+}

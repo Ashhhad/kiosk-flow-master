@@ -1,0 +1,371 @@
+{
+  "version": "1.0.0",
+  "design_tokens": {
+    "colors": {
+      "primary": "hsl(36, 100%, 50%)",
+      "primary-foreground": "hsl(0, 0%, 0%)",
+      "background": "hsl(220, 20%, 10%)",
+      "foreground": "hsl(0, 0%, 98%)",
+      "card": "hsl(220, 15%, 13%)",
+      "muted": "hsl(220, 10%, 20%)",
+      "muted-foreground": "hsl(220, 10%, 60%)",
+      "destructive": "hsl(0, 80%, 50%)",
+      "success": "hsl(142, 71%, 45%)",
+      "warning": "hsl(38, 92%, 50%)"
+    },
+    "typography": {
+      "kiosk-xs": "clamp(0.75rem, 1.5vw, 0.875rem)",
+      "kiosk-sm": "clamp(0.875rem, 1.8vw, 1rem)",
+      "kiosk-base": "clamp(1rem, 2vw, 1.125rem)",
+      "kiosk-lg": "clamp(1.125rem, 2.2vw, 1.25rem)",
+      "kiosk-xl": "clamp(1.25rem, 2.5vw, 1.5rem)",
+      "kiosk-2xl": "clamp(1.5rem, 3vw, 1.875rem)",
+      "kiosk-3xl": "clamp(1.875rem, 4vw, 2.25rem)"
+    },
+    "spacing": {
+      "touch-target-min": "60px",
+      "touch-target-recommended": "72px",
+      "container-padding-mobile": "12px",
+      "container-padding-desktop": "24px"
+    },
+    "breakpoints": {
+      "mobile": "480px",
+      "tablet": "1024px",
+      "kiosk-portrait": "1080px",
+      "kiosk-landscape": "1920px"
+    }
+  },
+  "components": [
+    {
+      "name": "AddonChip",
+      "description": "Selectable chip for add-on options with price display",
+      "file": "src/components/kiosk/AccessibleButton.tsx",
+      "props": {
+        "name": "string - Display name of the addon",
+        "price": "number - Price in dollars",
+        "selected": "boolean - Whether chip is selected",
+        "disabled": "boolean - Whether chip is disabled (max reached)",
+        "remainingSlots": "number | undefined - Remaining addon slots for aria announcement",
+        "onToggle": "() => void - Toggle callback"
+      },
+      "accessibility": {
+        "role": "checkbox",
+        "aria-pressed": "true|false",
+        "aria-label": "dynamic: '{name}, add-on, {price}, {selected ? 'selected' : 'not selected'}'",
+        "aria-disabled": "true when disabled"
+      },
+      "variants": {
+        "default": "Unselected state with border",
+        "selected": "Selected with primary background",
+        "disabled": "Muted colors, cursor not-allowed"
+      },
+      "responsive": {
+        "mobile": "Full width, min-height 60px",
+        "desktop": "Auto width, min-height 72px"
+      },
+      "example": "<AddonChip name=\"Extra Cheese\" price={0.50} selected={false} remainingSlots={1} onToggle={() => {}} />"
+    },
+    {
+      "name": "SizeSelector",
+      "description": "Radio button group for size/meal options",
+      "file": "src/components/kiosk/ItemDetailScreen.tsx (inline)",
+      "props": {
+        "options": "CustomizationOption[] - Available size options",
+        "selected": "string - Selected option ID",
+        "onChange": "(optionId: string) => void"
+      },
+      "accessibility": {
+        "role": "radiogroup",
+        "aria-label": "Size selection"
+      },
+      "responsive": {
+        "mobile": "Single column, full width options",
+        "desktop": "2-3 column grid"
+      }
+    },
+    {
+      "name": "QuantityStepper",
+      "description": "Increment/decrement control with min/max bounds",
+      "file": "src/components/kiosk/AccessibleButton.tsx",
+      "props": {
+        "value": "number - Current quantity",
+        "min": "number - Minimum value (default: 1)",
+        "max": "number - Maximum value (default: 99)",
+        "onChange": "(value: number) => void",
+        "label": "string - Accessible label for the stepper"
+      },
+      "accessibility": {
+        "role": "group",
+        "aria-label": "Quantity selector",
+        "buttons": {
+          "decrement": "aria-label: 'Decrease quantity'",
+          "increment": "aria-label: 'Increase quantity'"
+        },
+        "value-display": "aria-live: 'polite'"
+      },
+      "responsive": {
+        "mobile": "72px buttons, 48px value display",
+        "desktop": "80px buttons, 56px value display"
+      },
+      "example": "<QuantityStepper value={2} min={1} max={20} onChange={setQuantity} label=\"Big Mac quantity\" />"
+    },
+    {
+      "name": "StickyBottomCartBar",
+      "description": "Mobile cart summary bar fixed to bottom of screen",
+      "file": "src/components/kiosk/MobileCartBar.tsx",
+      "props": {
+        "onTap": "() => void - Opens full cart view"
+      },
+      "accessibility": {
+        "role": "button",
+        "aria-label": "dynamic: 'View cart, {itemCount} items, {total} dollars'",
+        "aria-live": "polite (for count/total updates)"
+      },
+      "layout": {
+        "height": "88-120px",
+        "position": "fixed bottom-0 inset-x-0",
+        "z-index": "40"
+      },
+      "responsive": {
+        "visibility": "Hidden on desktop (showBottomCart: false)"
+      },
+      "example": "<MobileCartBar onTap={() => setShowMobileCart(true)} />"
+    },
+    {
+      "name": "FullscreenModal",
+      "description": "Full-screen modal for mobile, centered modal for desktop",
+      "file": "src/components/kiosk/MobileCartBar.tsx (MobileCartOverlay)",
+      "props": {
+        "isOpen": "boolean",
+        "onClose": "() => void",
+        "children": "ReactNode"
+      },
+      "accessibility": {
+        "role": "dialog",
+        "aria-modal": "true",
+        "focus-trap": "First focusable element on open, restore on close",
+        "aria-label": "Content-dependent"
+      },
+      "behavior": {
+        "mobile": "Full screen with header containing back button",
+        "desktop": "Centered, max-width 720-880px, max-height 90vh",
+        "close": "Back button, swipe down (mobile), or click backdrop"
+      },
+      "responsive": {
+        "mobile": "fixed inset-0 z-50",
+        "desktop": "max-w-4xl mx-auto rounded-3xl"
+      }
+    },
+    {
+      "name": "CategoryRail",
+      "description": "Horizontally scrolling category buttons with snap behavior",
+      "file": "src/components/kiosk/MenuScreen.tsx (inline)",
+      "props": {
+        "categories": "Category[]",
+        "selectedId": "string",
+        "onSelect": "(categoryId: string) => void"
+      },
+      "accessibility": {
+        "role": "tablist",
+        "aria-label": "Menu categories",
+        "buttons": {
+          "role": "tab",
+          "aria-selected": "true|false",
+          "aria-controls": "panel-{categoryId}"
+        },
+        "keyboard": "ArrowLeft/ArrowRight to navigate"
+      },
+      "scroll": {
+        "scroll-snap-type": "x mandatory",
+        "scroll-snap-align": "start (on each button)",
+        "overflow-x": "auto",
+        "scrollbar": "hidden (CSS: scrollbar-hide)"
+      },
+      "responsive": {
+        "mobile": "56px button height",
+        "desktop": "64px button height"
+      }
+    },
+    {
+      "name": "VirtualizedMenuList",
+      "description": "Windowed list for rendering large menu catalogs efficiently",
+      "file": "src/hooks/useVirtualizedList.ts",
+      "props": {
+        "items": "MenuItem[]",
+        "itemHeight": "number - Approximate item height",
+        "bufferItems": "number - Items to render outside viewport (default: 10)"
+      },
+      "performance": {
+        "strategy": "IntersectionObserver-based virtualization",
+        "dom-nodes": "Only viewport + buffer items rendered",
+        "threshold": "Activate when items > 20"
+      },
+      "accessibility": {
+        "role": "list on container",
+        "items": "role: listitem",
+        "aria-label": "'{count} items available'"
+      }
+    },
+    {
+      "name": "Toast",
+      "description": "Non-blocking notification component",
+      "file": "src/components/ui/sonner.tsx",
+      "props": {
+        "message": "string",
+        "type": "success | error | info | warning",
+        "duration": "number (ms, default: 4000)"
+      },
+      "accessibility": {
+        "role": "status",
+        "aria-live": "polite",
+        "aria-atomic": "true"
+      },
+      "position": "bottom-center on mobile, bottom-right on desktop"
+    },
+    {
+      "name": "ErrorModal",
+      "description": "Modal for displaying system errors with recovery actions",
+      "file": "src/components/kiosk/ErrorModal.tsx",
+      "props": {
+        "error": "{ type, message, retryAction }",
+        "onDismiss": "() => void"
+      },
+      "error_types": {
+        "network": "Network connection lost",
+        "payment": "Payment processing failed",
+        "printer": "Receipt printing failed",
+        "kds": "Kitchen display unavailable",
+        "out-of-stock": "Item no longer available"
+      },
+      "accessibility": {
+        "role": "alertdialog",
+        "aria-modal": "true",
+        "aria-labelledby": "error-title",
+        "aria-describedby": "error-description"
+      },
+      "actions": {
+        "retry": "Calls retryAction if provided",
+        "cancel": "Resets kiosk or dismisses"
+      }
+    },
+    {
+      "name": "InactivityWarning",
+      "description": "Countdown modal shown during inactivity timeout",
+      "file": "src/components/kiosk/InactivityModal.tsx",
+      "props": {
+        "countdown": "number - Seconds remaining",
+        "onContinue": "() => void",
+        "onCancel": "() => void"
+      },
+      "accessibility": {
+        "role": "alertdialog",
+        "aria-live": "assertive",
+        "aria-label": "Are you still there?"
+      },
+      "timing": {
+        "warning_at": "45 seconds inactivity",
+        "timeout_at": "60 seconds inactivity"
+      }
+    },
+    {
+      "name": "PrinterErrorBanner",
+      "description": "Persistent banner when receipt printing fails",
+      "file": "src/components/kiosk/OfflineBanner.tsx (variant)",
+      "props": {
+        "orderNumber": "string",
+        "onRetry": "() => void"
+      },
+      "accessibility": {
+        "role": "alert",
+        "aria-live": "polite"
+      },
+      "behavior": "Shows on confirmation screen when printer.print() fails"
+    },
+    {
+      "name": "ScrollHint",
+      "description": "Visual indicator that content is scrollable",
+      "file": "src/components/kiosk/ScrollHint.tsx",
+      "props": {
+        "direction": "'horizontal' | 'vertical'",
+        "visible": "boolean",
+        "onDismiss": "() => void"
+      },
+      "behavior": {
+        "display": "Shows 'Swipe to see more' with icon",
+        "dismiss": "After first scroll or tap"
+      }
+    },
+    {
+      "name": "ScrollGradients",
+      "description": "Gradient overlays indicating scroll position",
+      "file": "src/components/kiosk/ScrollHint.tsx",
+      "props": {
+        "showTop": "boolean",
+        "showBottom": "boolean"
+      },
+      "styling": "Absolute positioned gradients at top/bottom of scroll container"
+    },
+    {
+      "name": "LazyImage",
+      "description": "Image component with lazy loading and LQIP placeholder",
+      "file": "src/components/kiosk/LazyImage.tsx",
+      "props": {
+        "src": "string",
+        "alt": "string",
+        "className": "string",
+        "placeholder": "ReactNode (optional)"
+      },
+      "performance": {
+        "strategy": "IntersectionObserver",
+        "placeholder": "Shimmer animation or low-quality blur",
+        "threshold": "Load when within 2 viewport heights"
+      }
+    }
+  ],
+  "figma_artboards": [
+    {
+      "name": "Idle",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "OrderType",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "Menu",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "ItemDetail_Fullscreen",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "CartReview_Fullscreen",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "CartSidebar",
+      "dimensions": { "landscape": "384x1080" }
+    },
+    {
+      "name": "Upsell",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "Payment",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "Confirmation",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
+    },
+    {
+      "name": "Admin_Diagnostics",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080" }
+    },
+    {
+      "name": "Settings_Accessibility",
+      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080" }
+    }
+  ]
+}
