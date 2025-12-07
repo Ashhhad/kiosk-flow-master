@@ -1,0 +1,512 @@
+{
+  "version": "1.0.0",
+  "baseUrl": "/api/v1",
+  "endpoints": {
+    "session.start": {
+      "method": "POST",
+      "path": "/session/start",
+      "request": {
+        "kiosk_id": "string (required)",
+        "device_fingerprint": "string (optional)"
+      },
+      "response": {
+        "success": {
+          "status": 201,
+          "body": {
+            "session_id": "session_1733571600000_abc123def",
+            "kiosk_id": "kiosk_001",
+            "created_at": "2024-12-07T12:00:00.000Z",
+            "expires_at": "2024-12-07T12:05:00.000Z",
+            "ttl_seconds": 300
+          }
+        },
+        "error": {
+          "status": 503,
+          "body": {
+            "error": "KIOSK_UNAVAILABLE",
+            "message": "Kiosk is currently offline or in maintenance mode"
+          }
+        }
+      }
+    },
+    "session.touch": {
+      "method": "POST",
+      "path": "/session/{session_id}/touch",
+      "request": {},
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "session_id": "session_1733571600000_abc123def",
+            "last_activity": "2024-12-07T12:01:30.000Z",
+            "expires_at": "2024-12-07T12:06:30.000Z"
+          }
+        }
+      }
+    },
+    "session.destroy": {
+      "method": "DELETE",
+      "path": "/session/{session_id}",
+      "request": {},
+      "response": {
+        "success": {
+          "status": 204,
+          "body": null
+        }
+      }
+    },
+    "menu.fetchCategories": {
+      "method": "GET",
+      "path": "/menu/categories",
+      "request": {
+        "query": {
+          "kiosk_id": "string (optional)",
+          "locale": "string (optional, default: en)"
+        }
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "categories": [
+              {
+                "id": "popular",
+                "name": "Popular",
+                "icon": "🔥",
+                "item_count": 8,
+                "sort_order": 0
+              },
+              {
+                "id": "burgers",
+                "name": "Burgers",
+                "icon": "🍔",
+                "item_count": 12,
+                "sort_order": 1
+              }
+            ],
+            "last_updated": "2024-12-07T10:00:00.000Z"
+          }
+        }
+      }
+    },
+    "menu.fetchItems": {
+      "method": "GET",
+      "path": "/menu/categories/{category_id}/items",
+      "request": {
+        "query": {
+          "page_token": "string (optional)",
+          "limit": "number (optional, default: 20, max: 100)"
+        }
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "items": [
+              {
+                "id": "big-mac",
+                "name": "Big Mac",
+                "description": "Two 100% beef patties...",
+                "price": 5.99,
+                "image_url": "https://cdn.example.com/big-mac.webp",
+                "category": "popular",
+                "is_available": true,
+                "calories": 550,
+                "allergens": ["Gluten", "Dairy", "Sesame"],
+                "has_customizations": true
+              }
+            ],
+            "next_page_token": "eyJvZmZzZXQiOjIwfQ==",
+            "total_count": 45
+          }
+        }
+      }
+    },
+    "item.fetchDetails": {
+      "method": "GET",
+      "path": "/menu/items/{item_id}",
+      "request": {},
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "id": "big-mac",
+            "name": "Big Mac",
+            "description": "Two 100% beef patties, special sauce, lettuce, cheese, pickles, onions on a sesame seed bun",
+            "price": 5.99,
+            "image_url": "https://cdn.example.com/big-mac.webp",
+            "category": "popular",
+            "is_available": true,
+            "inventory_quantity": 50,
+            "calories": 550,
+            "allergens": ["Gluten", "Dairy", "Sesame"],
+            "customizations": [
+              {
+                "id": "size",
+                "name": "Make it a Meal",
+                "type": "single",
+                "required": false,
+                "options": [
+                  { "id": "sandwich-only", "name": "Sandwich Only", "price": 0, "is_default": true },
+                  { "id": "medium-meal", "name": "Medium Meal", "price": 3.00 },
+                  { "id": "large-meal", "name": "Large Meal", "price": 4.00 }
+                ]
+              },
+              {
+                "id": "extras",
+                "name": "Extra Toppings",
+                "type": "multiple",
+                "required": false,
+                "max_selections": 2,
+                "options": [
+                  { "id": "extra-cheese", "name": "Extra Cheese", "price": 0.50 },
+                  { "id": "extra-bacon", "name": "Add Bacon", "price": 1.50 },
+                  { "id": "extra-patty", "name": "Extra Patty", "price": 2.00 }
+                ]
+              }
+            ],
+            "last_updated": "2024-12-07T10:00:00.000Z"
+          }
+        },
+        "error_out_of_stock": {
+          "status": 200,
+          "body": {
+            "id": "big-mac",
+            "name": "Big Mac",
+            "is_available": false,
+            "unavailable_reason": "OUT_OF_STOCK"
+          }
+        }
+      }
+    },
+    "cart.addItem": {
+      "method": "POST",
+      "path": "/session/{session_id}/cart/items",
+      "request": {
+        "item_id": "big-mac",
+        "quantity": 1,
+        "customizations": [
+          { "customization_id": "size", "option_ids": ["medium-meal"] },
+          { "customization_id": "extras", "option_ids": ["extra-cheese", "extra-bacon"] }
+        ],
+        "optimistic": true
+      },
+      "response": {
+        "success": {
+          "status": 201,
+          "body": {
+            "cart_item_id": "cart_item_1733571600000_xyz",
+            "item_id": "big-mac",
+            "quantity": 1,
+            "unit_price": 5.99,
+            "customizations_total": 5.00,
+            "line_total": 10.99,
+            "confirmed": true
+          }
+        },
+        "error_max_addons": {
+          "status": 400,
+          "body": {
+            "error": "MAX_SELECTIONS_EXCEEDED",
+            "message": "Maximum 2 add-ons allowed",
+            "field": "customizations.extras",
+            "max_allowed": 2,
+            "requested": 3
+          }
+        },
+        "error_out_of_stock": {
+          "status": 409,
+          "body": {
+            "error": "ITEM_UNAVAILABLE",
+            "message": "Big Mac is currently out of stock",
+            "item_id": "big-mac",
+            "alternative_items": ["quarter-pounder", "mcdouble"]
+          }
+        },
+        "error_addon_unavailable": {
+          "status": 409,
+          "body": {
+            "error": "ADDON_UNAVAILABLE",
+            "message": "Extra Bacon is no longer available",
+            "addon_id": "extra-bacon",
+            "suggested_action": "REMOVE_ADDON"
+          }
+        }
+      }
+    },
+    "cart.updateItem": {
+      "method": "PATCH",
+      "path": "/session/{session_id}/cart/items/{cart_item_id}",
+      "request": {
+        "quantity": 2,
+        "customizations": [
+          { "customization_id": "size", "option_ids": ["large-meal"] }
+        ],
+        "optimistic": true
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "cart_item_id": "cart_item_1733571600000_xyz",
+            "quantity": 2,
+            "line_total": 21.98,
+            "confirmed": true
+          }
+        }
+      }
+    },
+    "cart.removeItem": {
+      "method": "DELETE",
+      "path": "/session/{session_id}/cart/items/{cart_item_id}",
+      "request": {
+        "optimistic": true
+      },
+      "response": {
+        "success": {
+          "status": 204,
+          "body": null
+        }
+      }
+    },
+    "cart.recalculate": {
+      "method": "POST",
+      "path": "/session/{session_id}/cart/recalculate",
+      "request": {},
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "subtotal": 32.97,
+            "tax_rate": 0.08,
+            "tax_amount": 2.64,
+            "total": 35.61,
+            "items_valid": true,
+            "price_changes": []
+          }
+        },
+        "price_changed": {
+          "status": 200,
+          "body": {
+            "subtotal": 34.97,
+            "tax_rate": 0.08,
+            "tax_amount": 2.80,
+            "total": 37.77,
+            "items_valid": true,
+            "price_changes": [
+              {
+                "item_id": "big-mac",
+                "previous_price": 5.99,
+                "current_price": 6.49,
+                "delta": 0.50
+              }
+            ],
+            "requires_confirmation": true
+          }
+        },
+        "item_unavailable": {
+          "status": 200,
+          "body": {
+            "subtotal": 26.98,
+            "items_valid": false,
+            "unavailable_items": [
+              {
+                "cart_item_id": "cart_item_xyz",
+                "item_id": "big-mac",
+                "reason": "OUT_OF_STOCK",
+                "suggested_action": "REMOVE"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "payment.process": {
+      "method": "POST",
+      "path": "/session/{session_id}/payment",
+      "request": {
+        "method": "card",
+        "amount": 35.61,
+        "currency": "USD",
+        "reader_id": "reader_001"
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "transaction_id": "txn_1733571600000_abc",
+            "status": "SUCCESS",
+            "amount": 35.61,
+            "method": "card",
+            "card_last_four": "4242",
+            "card_brand": "visa",
+            "order_number": "A042",
+            "receipt_url": "https://receipts.example.com/txn_abc"
+          }
+        },
+        "partial_auth": {
+          "status": 402,
+          "body": {
+            "transaction_id": "txn_1733571600001_def",
+            "status": "PARTIAL_AUTH",
+            "authorized_amount": 20.00,
+            "requested_amount": 35.61,
+            "remaining_amount": 15.61,
+            "message": "Card authorization succeeded but capture failed",
+            "suggested_action": "RETRY_OR_ALTERNATE_METHOD"
+          }
+        },
+        "declined": {
+          "status": 402,
+          "body": {
+            "status": "DECLINED",
+            "decline_code": "INSUFFICIENT_FUNDS",
+            "message": "Payment was declined. Please try another card.",
+            "suggested_action": "TRY_ANOTHER_METHOD"
+          }
+        },
+        "reader_error": {
+          "status": 503,
+          "body": {
+            "status": "READER_ERROR",
+            "error_code": "READER_TIMEOUT",
+            "message": "Card reader timed out. Please try again.",
+            "suggested_action": "RETRY"
+          }
+        }
+      }
+    },
+    "kds.publish": {
+      "method": "POST",
+      "path": "/orders/{order_number}/kds",
+      "request": {
+        "order_number": "A042",
+        "order_type": "dine-in",
+        "items": [
+          {
+            "name": "Big Mac",
+            "quantity": 2,
+            "customizations": ["Medium Meal", "Extra Cheese"]
+          }
+        ],
+        "priority": "normal"
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "kds_order_id": "kds_1733571600000",
+            "status": "QUEUED",
+            "estimated_prep_time_minutes": 8,
+            "display_number": "042"
+          }
+        },
+        "kds_offline": {
+          "status": 503,
+          "body": {
+            "status": "KDS_OFFLINE",
+            "message": "Kitchen display is currently unavailable",
+            "fallback_action": "PRINT_TICKET",
+            "queued_for_retry": true
+          }
+        }
+      }
+    },
+    "printer.print": {
+      "method": "POST",
+      "path": "/orders/{order_number}/print",
+      "request": {
+        "order_number": "A042",
+        "type": "customer_receipt",
+        "printer_id": "printer_001"
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "print_job_id": "print_1733571600000",
+            "status": "PRINTED",
+            "printer_id": "printer_001"
+          }
+        },
+        "printer_error": {
+          "status": 503,
+          "body": {
+            "status": "PRINTER_ERROR",
+            "error_code": "PAPER_OUT",
+            "message": "Printer is out of paper",
+            "suggested_action": "NOTIFY_STAFF",
+            "order_saved": true
+          }
+        }
+      }
+    },
+    "sync.reconcile": {
+      "method": "POST",
+      "path": "/session/{session_id}/sync",
+      "request": {
+        "local_cart_hash": "abc123",
+        "pending_mutations": [
+          {
+            "id": "mutation_001",
+            "type": "ADD_ITEM",
+            "payload": { "item_id": "fries-medium", "quantity": 1 },
+            "timestamp": 1733571600000
+          }
+        ]
+      },
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "status": "SYNCED",
+            "server_cart_hash": "def456",
+            "applied_mutations": ["mutation_001"],
+            "conflicts": []
+          }
+        },
+        "conflict": {
+          "status": 200,
+          "body": {
+            "status": "CONFLICT",
+            "conflicts": [
+              {
+                "type": "ADDON_REMOVED",
+                "item_id": "big-mac",
+                "addon_id": "extra-bacon",
+                "message": "Extra Bacon has been removed from the menu",
+                "suggested_fix": {
+                  "action": "REMOVE_ADDON",
+                  "new_line_total": 9.49
+                }
+              }
+            ],
+            "requires_user_action": true
+          }
+        }
+      }
+    },
+    "health.check": {
+      "method": "GET",
+      "path": "/health",
+      "request": {},
+      "response": {
+        "success": {
+          "status": 200,
+          "body": {
+            "status": "HEALTHY",
+            "timestamp": "2024-12-07T12:00:00.000Z",
+            "services": {
+              "database": "UP",
+              "cache": "UP",
+              "payment_gateway": "UP",
+              "kds": "UP",
+              "printer": "UP"
+            },
+            "version": "1.0.0"
+          }
+        }
+      }
+    }
+  }
+}
