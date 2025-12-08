@@ -134,40 +134,18 @@ export const MenuScreen = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Cart Icon Button */}
-            <Button
-              variant="kiosk-secondary"
-              size="kiosk"
-              onClick={() => cartItemCount > 0 ? setScreen('cart') : null}
-              disabled={cartItemCount === 0}
-              className="min-h-[60px] lg:min-h-[72px] px-3 relative"
-              aria-label={`View cart, ${cartItemCount} items`}
-            >
-              <svg className="w-6 h-6 lg:w-7 lg:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {cartItemCount > 99 ? '99+' : cartItemCount}
-                </span>
-              )}
-            </Button>
-
-            {/* Cancel Button */}
-            <Button
-              variant="kiosk-ghost"
-              size="kiosk"
-              onClick={resetKiosk}
-              className="min-h-[60px] lg:min-h-[72px] text-destructive hover:bg-destructive/10 gap-1"
-              aria-label="Cancel order and start over"
-            >
-              <span className="hidden sm:inline text-kiosk-sm lg:text-kiosk-base">Cancel</span>
-              <svg className="w-5 h-5 lg:w-6 lg:h-6 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
+          <Button
+            variant="kiosk-ghost"
+            size="kiosk"
+            onClick={resetKiosk}
+            className="min-h-[60px] lg:min-h-[72px] text-destructive hover:bg-destructive/10 gap-1"
+            aria-label="Cancel order and start over"
+          >
+            <span className="hidden sm:inline text-kiosk-sm lg:text-kiosk-base">Cancel</span>
+            <svg className="w-5 h-5 lg:w-6 lg:h-6 sm:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </Button>
         </header>
 
         {/* Category Tabs - Horizontal scroll with snap */}
