@@ -1,10 +1,12 @@
 ========================================
 CLOUD POS KIOSK QA ACCEPTANCE TEST RUN
 ========================================
-Run Date: 2024-12-07T12:00:00.000Z
+Run Date: 2024-12-08T15:30:00.000Z
 Kiosk Version: 1.0.0
-Environment: Production Build
-Tester: Automated QA System
+Build: Production
+Environment: Lovable Preview Sandbox
+Tester: Production Delivery Engineer (Automated)
+Session ID: qa_run_1733671800000
 
 ========================================
 MOBILE & RESPONSIVE TESTS
