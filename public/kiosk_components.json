@@ -1,21 +1,17 @@
 {
-  "version": "2.1.0",
-  "generated": "2025-12-09T12:00:00Z",
-  "theme": "white-professional",
+  "version": "1.0.0",
   "design_tokens": {
     "colors": {
-      "primary": "hsl(217, 91%, 50%)",
-      "primary-foreground": "hsl(0, 0%, 100%)",
-      "background": "hsl(0, 0%, 100%)",
-      "foreground": "hsl(222, 47%, 11%)",
-      "card": "hsl(220, 14%, 96%)",
-      "muted": "hsl(220, 14%, 96%)",
-      "muted-foreground": "hsl(215, 16%, 47%)",
-      "destructive": "hsl(0, 72%, 51%)",
-      "success": "hsl(142, 71%, 35%)",
-      "warning": "hsl(28, 87%, 57%)",
-      "border": "hsl(220, 13%, 91%)",
-      "accent": "hsl(217, 91%, 50%)"
+      "primary": "hsl(36, 100%, 50%)",
+      "primary-foreground": "hsl(0, 0%, 0%)",
+      "background": "hsl(220, 20%, 10%)",
+      "foreground": "hsl(0, 0%, 98%)",
+      "card": "hsl(220, 15%, 13%)",
+      "muted": "hsl(220, 10%, 20%)",
+      "muted-foreground": "hsl(220, 10%, 60%)",
+      "destructive": "hsl(0, 80%, 50%)",
+      "success": "hsl(142, 71%, 45%)",
+      "warning": "hsl(38, 92%, 50%)"
     },
     "typography": {
       "kiosk-xs": "clamp(0.75rem, 1.5vw, 0.875rem)",
@@ -37,11 +33,6 @@
       "tablet": "1024px",
       "kiosk-portrait": "1080px",
       "kiosk-landscape": "1920px"
-    },
-    "shadows": {
-      "card": "0 4px 16px rgba(17, 24, 39, 0.08)",
-      "button": "0 2px 8px rgba(0, 102, 255, 0.2)",
-      "elevated": "0 8px 32px rgba(17, 24, 39, 0.12)"
     }
   },
   "components": [
@@ -133,47 +124,12 @@
       "layout": {
         "height": "88-120px",
         "position": "fixed bottom-0 inset-x-0",
-        "z-index": "40",
-        "safe-area": "padding-bottom: env(safe-area-inset-bottom)"
+        "z-index": "40"
       },
       "responsive": {
         "visibility": "Hidden on desktop (showBottomCart: false)"
       },
       "example": "<MobileCartBar onTap={() => setShowMobileCart(true)} />"
-    },
-    {
-      "name": "PaymentModal",
-      "description": "Full-screen payment modal on mobile, split view on desktop",
-      "file": "src/components/kiosk/PaymentScreen.tsx",
-      "props": {
-        "none": "Uses KioskStore internally"
-      },
-      "accessibility": {
-        "role": "dialog",
-        "aria-modal": "true",
-        "aria-label": "Payment. Total {ariaTotal}",
-        "focus-trap": "Custom useFocusTrap hook",
-        "keyboard": "Tab cycles within modal",
-        "aria-live": "assertive for payment status announcements"
-      },
-      "behavior": {
-        "mobile": "Full screen (fixed inset-0), sticky header, sticky footer with safe-area",
-        "desktop": "Split view - left order summary, right payment methods",
-        "scroll": "body.body-modal-open prevents background scroll",
-        "swipe": "Swipe down on mobile closes with confirmation"
-      },
-      "states": {
-        "idle": "Payment method selection",
-        "reader-waiting": "Waiting for card presentation",
-        "processing": "Transaction processing",
-        "success": "Payment successful",
-        "partial": "Partial authorization - requires retry",
-        "failed": "Payment declined"
-      },
-      "responsive": {
-        "mobile": "fixed inset-0 z-50, single column, sticky footer",
-        "desktop": "fixed inset-0 z-50, two-column split layout"
-      }
     },
     {
       "name": "FullscreenModal",
@@ -193,8 +149,7 @@
       "behavior": {
         "mobile": "Full screen with header containing back button",
         "desktop": "Centered, max-width 720-880px, max-height 90vh",
-        "close": "Back button, swipe down (mobile), or click backdrop",
-        "body-scroll": "body.body-modal-open class added"
+        "close": "Back button, swipe down (mobile), or click backdrop"
       },
       "responsive": {
         "mobile": "fixed inset-0 z-50",
@@ -398,18 +353,6 @@
     },
     {
       "name": "Payment",
-      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
-    },
-    {
-      "name": "Payment_Processing",
-      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
-    },
-    {
-      "name": "Payment_Success",
-      "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
-    },
-    {
-      "name": "Payment_Partial",
       "dimensions": { "portrait": "1080x1920", "landscape": "1920x1080", "mobile": "360x780" }
     },
     {
